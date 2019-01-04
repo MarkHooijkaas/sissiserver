@@ -4,7 +4,6 @@ import (
   "strings"
 	"bytes"
 	"io/ioutil"
-	"github.com/BurntSushi/toml"
 	"log"
 	"os"
 )
@@ -18,21 +17,19 @@ func check(err error) {
 
 func handle(out http.ResponseWriter, req *http.Request) {
   path := req.URL.Path
-  path = strings.TrimPrefix(path, "/")
-	if path!="favicon.ico" {
-  	handleFile(path, out)
-	}
+	log.Println("request for "+path)
+	handleFile(path, out)
 }
 
 func handleFile(path string, out http.ResponseWriter) {
-  path=conf.dir+path
+  path=dir+strings.TrimPrefix(path, "/")
 	if isDir(path) || path=="" {
 		path=path+"index.html"
 	}
-	log.Println("Loading: "+path)
+	log.Println("Reading: "+path)
 	txt, err := ioutil.ReadFile(path)
 	if err!=nil {
-		log.Println("ERROR: Could not load "+path)
+		log.Println("ERROR: Could not read "+path)
 	}
 	parts:=bytes.Split(txt,[]byte("<!--#include file=\""))
 	out.Write([]byte(parts[0]))
@@ -45,21 +42,19 @@ func handleFile(path string, out http.ResponseWriter) {
 	}
 }
 
-var conf Config
-type Config struct {
-    port string
-		dir string
+func getConfig(name string, defaultValue string) string {
+	value:=os.Getenv(name)
+	if len(value)>0 { return value}
+	return defaultValue
 }
 
-
+var dir string
 func main() {
-	_, err := toml.DecodeFile("config.toml", &conf);
-	check(err)
-	conf.port="8090"
-	conf.dir="site/"
-	log.Println("Listening on port "+conf.dir+conf.port)
+	port:=getConfig("port","8090")
+	dir=getConfig("dir","site")+"/"
+	log.Println("Listening on port "+port+" to directory "+dir)
 	http.HandleFunc("/", handle)
-  err = http.ListenAndServe(":"+string(conf.port), nil)
+  err := http.ListenAndServe(":"+port, nil)
   check(err)
 }
 
