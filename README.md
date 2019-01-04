@@ -24,7 +24,10 @@ It has no security features and is not designed for heavy load.
 For production purposes you can use a webserver such as NGINX which supports the same SSI syntax.
 
 ## Limitations
-The only ssi directive that is supported is the "include file" syntax.
+The only ssi directive that is supported is the "include file" syntax, as follows:
+```html
+<!--#include file="some-file.html" -->
+```
 See the test directory for an example.
 
 ## Building
