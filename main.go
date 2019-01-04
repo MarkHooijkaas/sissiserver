@@ -4,6 +4,7 @@ import (
   "strings"
 	"bytes"
 	"io/ioutil"
+	"github.com/BurntSushi/toml"
 	"log"
 	"os"
 )
@@ -24,6 +25,7 @@ func handle(out http.ResponseWriter, req *http.Request) {
 }
 
 func handleFile(path string, out http.ResponseWriter) {
+  path=conf.dir+path
 	if isDir(path) || path=="" {
 		path=path+"index.html"
 	}
@@ -38,17 +40,26 @@ func handleFile(path string, out http.ResponseWriter) {
 		pos:=bytes.IndexAny(parts[i], "-->")
 		includeFile:=parts[i][0:pos]
 		pos2:=bytes.IndexAny(includeFile,"\"")
-		//out.Write([]byte("***"))
-		//out.Write(includeFile[:pos2])
-		//out.Write([]byte("***"))
 	  handleFile(string(includeFile[:pos2]), out)
 		out.Write(parts[i][pos+3:])
 	}
 }
 
+var conf Config
+type Config struct {
+    port string
+		dir string
+}
+
+
 func main() {
-  http.HandleFunc("/", handle)
-  err := http.ListenAndServe(":8090", nil)
+	_, err := toml.DecodeFile("config.toml", &conf);
+	check(err)
+	conf.port="8090"
+	conf.dir="site/"
+	log.Println("Listening on port "+conf.dir+conf.port)
+	http.HandleFunc("/", handle)
+  err = http.ListenAndServe(":"+string(conf.port), nil)
   check(err)
 }
 
