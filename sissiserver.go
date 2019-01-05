@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+  "flag"
 )
 
 
@@ -31,7 +32,7 @@ func handleFile(path string, out http.ResponseWriter, indent string) {
 	if err!=nil {
 		log.Println(indent+"ERROR: Could not read "+path)
 	}
-	parts:=bytes.Split(txt,[]byte("<!--#include file=\""))
+	parts:=bytes.Split(txt,[]byte("<!--#include virtual=\""))
 	out.Write([]byte(parts[0]))
 	for i:=1; i<len(parts); i++ {
 		pos:=bytes.Index(parts[i], []byte("-->"))
@@ -49,10 +50,13 @@ func getConfig(name string, defaultValue string) string {
 }
 
 var dir string
+var port string
 func main() {
-	port:=getConfig("port","8090")
-	dir=getConfig("dir","site")+"/"
-	log.Println("Listening on port "+port+" to directory "+dir)
+  flag.StringVar(&dir, "dir", "html", "the directory with html files")
+  flag.StringVar(&port, "port", "8090", "the port to listen to")
+  flag.Parse()
+  dir=dir+"/"
+	log.Println("Listening on http://localhost:"+port+" to directory "+dir)
 	http.HandleFunc("/", handle)
   err := http.ListenAndServe(":"+port, nil)
   check(err)
