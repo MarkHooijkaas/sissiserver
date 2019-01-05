@@ -18,26 +18,26 @@ func check(err error) {
 func handle(out http.ResponseWriter, req *http.Request) {
   path := req.URL.Path
 	log.Println("request for "+path)
-	handleFile(path, out)
+	handleFile(path, out, "\t")
 }
 
-func handleFile(path string, out http.ResponseWriter) {
+func handleFile(path string, out http.ResponseWriter, indent string) {
   path=dir+strings.TrimPrefix(path, "/")
 	if isDir(path) || path=="" {
 		path=path+"index.html"
 	}
-	log.Println("Reading: "+path)
+	log.Println(indent+"- "+path)
 	txt, err := ioutil.ReadFile(path)
 	if err!=nil {
-		log.Println("ERROR: Could not read "+path)
+		log.Println(indent+"ERROR: Could not read "+path)
 	}
 	parts:=bytes.Split(txt,[]byte("<!--#include file=\""))
 	out.Write([]byte(parts[0]))
 	for i:=1; i<len(parts); i++ {
-		pos:=bytes.IndexAny(parts[i], "-->")
+		pos:=bytes.Index(parts[i], []byte("-->"))
 		includeFile:=parts[i][0:pos]
-		pos2:=bytes.IndexAny(includeFile,"\"")
-	  handleFile(string(includeFile[:pos2]), out)
+		pos2:=bytes.Index(includeFile,[]byte("\""))
+	  handleFile(string(includeFile[:pos2]), out, indent+"\t")
 		out.Write(parts[i][pos+3:])
 	}
 }
