@@ -9,6 +9,14 @@ Simple SSI Server: A very simple webserver supporting SSI (server side includes)
 - Start the sissiserver executable
 - Visit http:///localhost:8090 in your browser
 
+You can run the executable with the following two optional command lines options
+- `--port=8090` determine the port to listen to (default is 8090)
+- `--dir=html` the directory that contains static html files (defuult is html)
+this could be as follows:
+```
+sissiserver --port=81810 --dir=/var/www/html
+```
+
 ## Purpose
 This is a very simple and lightweight webserver.
 It consists of just one executable file, nothing else.
